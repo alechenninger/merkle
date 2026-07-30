@@ -413,6 +413,22 @@ function findSparsePathConflict(entries: SparseEntry[], depth: number, entryId: 
   return entries.find((entry) => entry.id !== entryId && entry.enabled && entry.key.trim() && sparseKeyPath(entry.key, depth) === path)
 }
 
+function findSparseCollisions(entries: SparseEntry[], depth: number) {
+  const entriesByPath = new Map<string, SparseEntry[]>()
+  for (const entry of entries) {
+    if (!entry.enabled || !entry.key.trim()) {
+      continue
+    }
+    const path = sparseKeyPath(entry.key, depth)
+    const pathEntries = entriesByPath.get(path) ?? []
+    pathEntries.push(entry)
+    entriesByPath.set(path, pathEntries)
+  }
+  return Array.from(entriesByPath.entries())
+    .filter(([, pathEntries]) => pathEntries.length > 1)
+    .map(([path, pathEntries]) => ({ path, entries: pathEntries }))
+}
+
 function findSparseDepthConflict(entries: SparseEntry[], depth: number) {
   const entriesByPath = new Map<string, SparseEntry>()
   for (const entry of entries) {
@@ -601,6 +617,9 @@ function App() {
 
   const sparseTree = useMemo(() => buildSparseTree(sparseEntries, sparseDepth), [sparseEntries, sparseDepth])
   const sparseProof = useMemo(() => buildSparseProof(sparseTree, selectedSparseKey), [sparseTree, selectedSparseKey])
+  const sparseCollisions = useMemo(() => findSparseCollisions(sparseEntries, sparseDepth), [sparseEntries, sparseDepth])
+  const sparseCollisionEntryIds = new Set(sparseCollisions.flatMap((collision) => collision.entries.map((entry) => entry.id)))
+  const sparseCollisionMessage = sparseCollisions.map(({ path, entries }) => `Collision at ${sparseDepth} bits / path ${path}: ${entries.map((entry) => `"${entry.key}"`).join(' and ')} share this path.`).join(' ')
   const activeSparseCount = sparseTree.leaves.filter((leaf) => leaf.active).length
   const occupiedSparseCount = sparseEntries.filter((entry) => entry.enabled && entry.key.trim()).length
   const sparseProofSize = measureSparseProof(sparseProof)
@@ -627,13 +646,7 @@ function App() {
 
   const updateSparseEntry = (entryIndex: number, field: 'key' | 'value', value: string) => {
     if (field === 'key') {
-      const entry = sparseEntries[entryIndex]
       const normalizedKey = value.trim()
-      const conflict = findSparsePathConflict(sparseEntries, sparseDepth, entry.id, normalizedKey)
-      if (conflict) {
-        setSparseError(`Collision at ${sparseDepth} bits / path ${sparseKeyPath(normalizedKey, sparseDepth)}: "${normalizedKey}" and "${conflict.key}" share this path.`)
-        return
-      }
       setSparseError('')
       setSelectedSparseKey(normalizedKey)
     } else {
@@ -820,15 +833,36 @@ function App() {
               </label>
               <div className="state-list">
                 {sparseEntries.map((entry, index) => (
-                  <div className={`state-row ${entry.key === selectedSparseKey ? 'is-selected' : ''}`} key={entry.id}>
-                    <button
-                      className="state-select"
-                      type="button"
-                      aria-label={`Inspect state ${entry.key || 'unassigned'}`}
-                      onClick={() => setSelectedSparseKey(entry.key || '')}
-                    >
-                      <span className="state-dot" />
-                    </button>
+                  <div className={`state-row ${entry.key === selectedSparseKey ? 'is-selected' : ''} ${sparseCollisionEntryIds.has(entry.id) ? 'is-collision' : ''}`} key={entry.id}>
+                    <div className="state-row-header">
+                      <button
+                        className="state-select"
+                        type="button"
+                        aria-label={`Inspect state ${entry.key || 'unassigned'}`}
+                        onClick={() => setSelectedSparseKey(entry.key || '')}
+                      >
+                        <span className="state-dot" />
+                      </button>
+                      <span className="state-row-id">{entry.id}</span>
+                      <InfoTip text="Include this state in the tree." className="switch-tip">
+                        <label className="switch">
+                          <input
+                            type="checkbox"
+                            checked={entry.enabled}
+                            aria-label={`Include state ${entry.key || 'unassigned'}`}
+                            onChange={(event) => {
+                              setSparseError('')
+                              setSparseEntries((entries) => entries.map((item, itemIndex) => itemIndex === index ? { ...item, enabled: event.target.checked } : item))
+                              setSelectedSparseKey(entry.key || '')
+                            }}
+                          />
+                          <span />
+                        </label>
+                      </InfoTip>
+                      <button className="remove-button" type="button" aria-label={`Remove state ${entry.key || 'unassigned'}`} onClick={() => removeSparseEntry(index)}>
+                        x
+                      </button>
+                    </div>
                     <div className="state-fields">
                       <label>
                         <span>key</span>
@@ -850,38 +884,13 @@ function App() {
                         />
                       </label>
                     </div>
-                    <InfoTip text="Include this state in the tree." className="switch-tip">
-                      <label className="switch">
-                        <input
-                          type="checkbox"
-                          checked={entry.enabled}
-                          aria-label={`Include state ${entry.key || 'unassigned'}`}
-                          onChange={(event) => {
-                            if (event.target.checked) {
-                              const conflict = findSparsePathConflict(sparseEntries, sparseDepth, entry.id, entry.key)
-                              if (conflict) {
-                                setSparseError(`Collision at ${sparseDepth} bits / path ${sparseKeyPath(entry.key, sparseDepth)}: "${entry.key}" and "${conflict.key}" share this path.`)
-                                return
-                              }
-                            }
-                            setSparseError('')
-                            setSparseEntries((entries) => entries.map((item, itemIndex) => itemIndex === index ? { ...item, enabled: event.target.checked } : item))
-                            setSelectedSparseKey(entry.key || '')
-                          }}
-                        />
-                        <span />
-                      </label>
-                    </InfoTip>
-                    <button className="remove-button" type="button" aria-label={`Remove state ${entry.key || 'unassigned'}`} onClick={() => removeSparseEntry(index)}>
-                      x
-                    </button>
                   </div>
                 ))}
               </div>
               <button className="add-button" type="button" onClick={addSparseEntry} disabled={sparseEntries.length >= 8 || occupiedSparseCount >= 2 ** sparseDepth}>
                 <span>+</span> Add state
               </button>
-              {sparseError && <div className="rail-error" role="alert"><span>!</span><p>{sparseError}</p></div>}
+              {(sparseCollisionMessage || sparseError) && <div className={`rail-error ${sparseCollisionMessage ? 'is-collision' : ''}`} role="alert"><span>!</span><p>{sparseCollisionMessage || sparseError}</p></div>}
               <div className="rail-note">
                 <span className="note-mark">i</span>
                 <p>Empty leaves resolve to a known default hash. This {sparseDepth}-bit teaching tree has {2 ** sparseDepth} possible paths.</p>

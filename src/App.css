@@ -369,20 +369,80 @@ main {
 }
 
 .state-row {
-  display: grid;
-  grid-template-columns: 15px minmax(0, 1fr) 28px 16px;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 7px;
+  padding: 9px 8px 10px;
   border: 1px solid transparent;
   background: #edf1f0;
   transition: border-color 160ms ease, background 160ms ease;
+}
+
+.state-row-header {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 25px 16px;
+  align-items: center;
+  gap: 8px;
+}
+
+.state-row-id {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--soft-muted);
+  font-family: var(--mono);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.state-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.state-fields label {
+  min-width: 0;
+  display: block;
+}
+
+.state-fields label > span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--soft-muted);
+  font-family: var(--mono);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.state-fields input {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  padding: 4px 6px;
+  border: 1px solid var(--line-dark);
+  border-radius: 2px;
+  outline: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.state-fields input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(21, 122, 118, 0.12);
 }
 
 .state-row.is-selected {
   border-color: #81b7b3;
   background: var(--teal-wash);
 }
+.state-row.is-collision {
+  border-color: var(--coral);
+  background: var(--coral-wash);
+}
+.state-row.is-collision .state-row-id { color: var(--coral-dark); }
+.state-row.is-collision .state-dot { border-color: var(--coral); }
 
 .state-select,
 .remove-button {
@@ -401,17 +461,12 @@ main {
   border-radius: 50%;
 }
 .state-row.is-selected .state-dot { background: var(--teal); box-shadow: 0 0 0 3px rgba(21, 122, 118, 0.14); }
-.state-fields {
-  display: grid;
-  grid-template-columns: minmax(45px, 0.52fr) minmax(50px, 1fr);
-  gap: 6px;
-}
 .state-fields label,
 .append-form label {
   min-width: 0;
   display: block;
 }
-.state-fields label > span,
+
 .append-form label > span {
   display: block;
   margin-bottom: 3px;
@@ -421,8 +476,6 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.07em;
 }
-.state-fields input,
-.state-fields select,
 .depth-control select,
 .append-form input,
 .append-form select {
