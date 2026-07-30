@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import './App.css'
 
 type SparseEntry = {
+  id: string
   key: string
   value: string
   enabled: boolean
@@ -52,10 +53,10 @@ type LogProofStep = {
 const SPARSE_DEPTH = 3
 
 const INITIAL_SPARSE_ENTRIES: SparseEntry[] = [
-  { key: '001', value: '42', enabled: true },
-  { key: '010', value: '17', enabled: true },
-  { key: '101', value: '83', enabled: true },
-  { key: '110', value: '06', enabled: true },
+  { id: 'state_001', key: '001', value: '42', enabled: true },
+  { id: 'state_002', key: '010', value: '17', enabled: true },
+  { id: 'state_003', key: '101', value: '83', enabled: true },
+  { id: 'state_004', key: '110', value: '06', enabled: true },
 ]
 
 const INITIAL_LOG_EVENTS: LogEvent[] = [
@@ -333,12 +334,16 @@ function App() {
   }, [logEvents, selectedLogIndex])
 
   const updateSparseEntry = (entryIndex: number, field: 'key' | 'value', value: string) => {
+    const nextValue = field === 'key' ? value.replace(/[^01]/g, '').slice(0, 3) : value
+    if (field === 'key' && /^[01]{3}$/.test(nextValue)) {
+      setSelectedSparseKey(nextValue)
+    }
     setSparseEntries((entries) =>
       entries.map((entry, index) => {
         if (index !== entryIndex) {
           return entry
         }
-        return { ...entry, [field]: field === 'key' ? value.replace(/[^01]/g, '').slice(0, 3) : value }
+        return { ...entry, [field]: nextValue }
       }),
     )
   }
@@ -351,7 +356,8 @@ function App() {
     if (!nextKey) {
       return
     }
-    setSparseEntries((entries) => [...entries, { key: nextKey, value: '24', enabled: true }])
+    const nextId = Math.max(...sparseEntries.map((entry) => Number(entry.id.replace('state_', '')) || 0), 0) + 1
+    setSparseEntries((entries) => [...entries, { id: `state_${String(nextId).padStart(3, '0')}`, key: nextKey, value: '24', enabled: true }])
     setSelectedSparseKey(nextKey)
   }
 
@@ -460,7 +466,7 @@ function App() {
               </div>
               <div className="state-list">
                 {sparseEntries.map((entry, index) => (
-                  <div className={`state-row ${entry.key === selectedSparseKey ? 'is-selected' : ''}`} key={`${entry.key}-${index}`}>
+                  <div className={`state-row ${entry.key === selectedSparseKey ? 'is-selected' : ''}`} key={entry.id}>
                     <button
                       className="state-select"
                       type="button"
@@ -478,7 +484,14 @@ function App() {
                           inputMode="numeric"
                           aria-label="State key"
                           onChange={(event) => updateSparseEntry(index, 'key', event.target.value)}
-                          onFocus={() => setSelectedSparseKey(entry.key || '000')}
+                          onFocus={(event) => {
+                            setSelectedSparseKey(entry.key || '000')
+                            event.currentTarget.select()
+                          }}
+                          onClick={(event) => {
+                            setSelectedSparseKey(entry.key || '000')
+                            event.currentTarget.select()
+                          }}
                         />
                       </label>
                       <label>
