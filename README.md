@@ -13,6 +13,8 @@ npm run dev
 
 Open the local URL shown by Vite.
 
+The demo is also hosted at https://alechenninger.github.io/merkle/.
+
 ## Checks
 
 ```bash
