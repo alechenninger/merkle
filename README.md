@@ -18,6 +18,7 @@ Open the local URL shown by Vite.
 ```bash
 npm run build
 npm run lint
+npm test
 ```
 
 The demo uses deterministic, domain-separated SHA-256 hashes and runs entirely

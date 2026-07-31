@@ -440,8 +440,13 @@ main {
   border-color: var(--coral);
   background: var(--coral-wash);
 }
+.state-row.is-incomplete:not(.is-collision) {
+  border-color: #b4b95d;
+  background: #f1f2d9;
+}
 .state-row.is-collision .state-row-id { color: var(--coral-dark); }
 .state-row.is-collision .state-dot { border-color: var(--coral); }
+.state-row.is-incomplete:not(.is-collision) .state-dot { border-color: #9ca23e; }
 
 .state-select,
 .remove-button {
@@ -652,6 +657,9 @@ main {
 .info-tip:focus-visible {
   outline: 2px solid var(--teal);
   outline-offset: 3px;
+}
+.info-tip.is-focusable:focus-visible {
+  outline-offset: 2px;
 }
 .info-tip-card {
   position: fixed;
@@ -948,6 +956,15 @@ main {
   text-transform: uppercase;
   white-space: nowrap;
 }
+.verified-badge.is-unverified {
+  border-color: #b4b95d;
+  color: #757b20;
+  background: #f1f2d9;
+}
+.verified-badge.is-unverified span {
+  background: #9ca23e;
+  box-shadow: 0 0 0 4px rgba(156, 162, 62, 0.13);
+}
 .proof-chain {
   display: flex;
   align-items: center;
@@ -1006,6 +1023,27 @@ main {
   border: 1px solid #b6d1ce;
   background: #f0f7f5;
 }
+.recipe-strip > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.recipe-strip > summary::-webkit-details-marker { display: none; }
+.recipe-strip > summary::before {
+  content: '+';
+  display: inline-grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  margin-right: 7px;
+  border: 1px solid var(--teal);
+  color: var(--teal-dark);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+.recipe-strip[open] > summary::before { content: '-'; }
+.coral-recipe > summary::before { border-color: var(--coral); color: var(--coral-dark); }
 .coral-recipe { border-color: #e3c0b8; background: #fcf3f0; }
 .recipe-heading,
 .proof-size-heading,
@@ -1312,8 +1350,8 @@ main {
   .structure-section { padding-inline: 0; }
   .sparse-layout,
   .log-layout { grid-template-columns: 1fr; }
-  .control-rail { order: 2; }
-  .visual-stage { order: 1; }
+  .control-rail { order: 1; }
+  .visual-stage { order: 2; }
   .why-band { padding-inline: 0; }
 }
 
