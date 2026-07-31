@@ -21,13 +21,19 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand-group">
-          <div className="brand-mark" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-            <i />
-            <i />
-          </div>
+          <svg className="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="1" y="1" width="46" height="46" rx="4" />
+            <g className="brand-branches">
+              <path d="M24 13v4M15 21l9-4 9 4M15 25v4l-7 6M15 29l5 6M33 25v4l-5 6M33 29l7 6" />
+            </g>
+            <circle className="brand-root" cx="24" cy="12" r="4" />
+            <circle cx="15" cy="22" r="3.25" />
+            <circle cx="33" cy="22" r="3.25" />
+            <circle cx="8" cy="35" r="3.25" />
+            <circle cx="20" cy="35" r="3.25" />
+            <circle cx="28" cy="35" r="3.25" />
+            <circle cx="40" cy="35" r="3.25" />
+          </svg>
           <div>
             <span className="overline">Merkle / field notes</span>
             <h1>Proof instruments</h1>

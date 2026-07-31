@@ -64,41 +64,27 @@ main,
 }
 
 .brand-mark {
-  width: 35px;
-  height: 35px;
-  position: relative;
-  border: 1px solid var(--ink);
-  background: var(--yellow);
-  border-radius: 50%;
+  width: 42px;
+  height: 42px;
   flex: 0 0 auto;
 }
 
-.brand-mark span,
-.brand-mark i {
-  position: absolute;
-  display: block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--ink);
+.brand-mark rect {
+  fill: var(--yellow);
+  stroke: var(--ink);
+  stroke-width: 1.75;
 }
 
-.brand-mark span:nth-child(1) { left: 7px; top: 14px; }
-.brand-mark span:nth-child(2) { left: 14px; top: 7px; }
-.brand-mark span:nth-child(3) { right: 6px; top: 14px; }
-.brand-mark i:nth-of-type(1) { left: 14px; bottom: 6px; }
-.brand-mark i:nth-of-type(2) { right: 6px; bottom: 6px; }
-.brand-mark::before,
-.brand-mark::after {
-  content: '';
-  position: absolute;
-  height: 1px;
-  width: 12px;
-  background: var(--ink);
-  transform-origin: left center;
+.brand-mark .brand-branches {
+  fill: none;
+  stroke: var(--ink);
+  stroke-linecap: square;
+  stroke-linejoin: bevel;
+  stroke-width: 1.75;
 }
-.brand-mark::before { left: 10px; top: 16px; transform: rotate(-45deg); }
-.brand-mark::after { left: 17px; top: 10px; transform: rotate(45deg); }
+
+.brand-mark circle { fill: var(--ink); }
+.brand-mark .brand-root { fill: var(--teal); }
 
 .overline,
 .section-kicker,
