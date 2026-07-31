@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { INITIAL_SPARSE_ENTRIES } from '../../demoData'
+import { createInitialSparseEntries } from '../../demoData'
 import {
   buildSparseProof,
   buildSparseTree,
@@ -16,7 +16,7 @@ import type { SparseEntry } from '../../domain/types'
 export type SparseDemoModel = ReturnType<typeof useSparseDemo>
 
 export function useSparseDemo() {
-  const [entries, setEntries] = useState(INITIAL_SPARSE_ENTRIES)
+  const [entries, setEntries] = useState(createInitialSparseEntries)
   const [depth, setDepth] = useState(DEFAULT_SPARSE_DEPTH)
   const [selectedKey, setSelectedKey] = useState('account:alice')
   const [error, setError] = useState('')
@@ -98,7 +98,7 @@ export function useSparseDemo() {
   }
 
   const reset = () => {
-    setEntries(INITIAL_SPARSE_ENTRIES)
+    setEntries(createInitialSparseEntries())
     setDepth(DEFAULT_SPARSE_DEPTH)
     setSelectedKey('account:alice')
     setError('')

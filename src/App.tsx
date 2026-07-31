@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './App.css'
 import { InfoTip } from './components/InfoTip'
 import { LogSection } from './features/log/LogSection'
@@ -8,10 +9,12 @@ import { useSparseDemo } from './features/sparse/useSparseDemo'
 function App() {
   const sparse = useSparseDemo()
   const log = useLogDemo()
+  const [resetToken, setResetToken] = useState(0)
 
   const resetDemo = () => {
     sparse.reset()
     log.reset()
+    setResetToken((currentToken) => currentToken + 1)
   }
 
   return (
@@ -56,8 +59,8 @@ function App() {
           </div>
         </section>
 
-        <SparseSection model={sparse} />
-        <LogSection model={log} />
+        <SparseSection key={`sparse-${resetToken}`} model={sparse} />
+        <LogSection key={`log-${resetToken}`} model={log} />
 
         <section className="why-band" aria-labelledby="why-title">
           <div className="why-heading">

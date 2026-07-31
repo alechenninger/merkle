@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { createInitialLogEvents, createInitialSparseEntries } from '../demoData'
 import { hashFields, sha256 } from './hash'
 import { buildLogTree, buildLogView, logLeafHash } from './log'
-import { buildSparseProof, buildSparseTree, sparseKeyPath, validateSparseEntries } from './sparse'
+import { buildSparseProof, buildSparseTree, DEFAULT_SPARSE_DEPTH, sparseKeyPath, validateSparseEntries } from './sparse'
 import type { LogEvent, SparseEntry } from './types'
 
 describe('hashing', () => {
@@ -15,6 +16,13 @@ describe('hashing', () => {
 })
 
 describe('sparse tree', () => {
+  it('starts with a valid collision-free demo state', () => {
+    const validation = validateSparseEntries(createInitialSparseEntries(), DEFAULT_SPARSE_DEPTH)
+
+    expect(validation.valid).toBe(true)
+    expect(validation.collisions).toHaveLength(0)
+  })
+
   it('rejects collisions and incomplete values before tree construction', () => {
     const firstKey = 'collision-0'
     const firstPath = sparseKeyPath(firstKey, 2)
@@ -46,6 +54,20 @@ describe('sparse tree', () => {
     expect(populatedProof.reconstructedRoot).toBe(tree.root.hash)
     expect(emptyProof.leaf.active).toBe(false)
     expect(emptyProof.reconstructedRoot).toBe(tree.root.hash)
+  })
+})
+
+describe('demo defaults', () => {
+  it('creates fresh records for each reset', () => {
+    const firstSparseEntries = createInitialSparseEntries()
+    const secondSparseEntries = createInitialSparseEntries()
+    const firstLogEvents = createInitialLogEvents()
+    const secondLogEvents = createInitialLogEvents()
+
+    expect(firstSparseEntries).not.toBe(secondSparseEntries)
+    expect(firstSparseEntries[0]).not.toBe(secondSparseEntries[0])
+    expect(firstLogEvents).not.toBe(secondLogEvents)
+    expect(firstLogEvents[0]).not.toBe(secondLogEvents[0])
   })
 })
 

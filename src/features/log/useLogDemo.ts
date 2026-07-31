@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { INITIAL_LOG_EVENTS, LOG_KIND_OPTIONS } from '../../demoData'
+import { createInitialLogEvents, LOG_KIND_OPTIONS } from '../../demoData'
 import { buildLogView, eventTimestamp, measureLogProof } from '../../domain/log'
 
 export type LogDemoModel = ReturnType<typeof useLogDemo>
 
 export function useLogDemo() {
-  const [events, setEvents] = useState(INITIAL_LOG_EVENTS)
+  const [events, setEvents] = useState(createInitialLogEvents)
   const [selectedIndex, setSelectedIndex] = useState(1)
   const [newEventKind, setNewEventKind] = useState(LOG_KIND_OPTIONS[0])
   const [newEventActor, setNewEventActor] = useState('Mina')
@@ -35,7 +35,7 @@ export function useLogDemo() {
   }
 
   const reset = () => {
-    setEvents(INITIAL_LOG_EVENTS)
+    setEvents(createInitialLogEvents())
     setSelectedIndex(1)
     setNewEventKind(LOG_KIND_OPTIONS[0])
     setNewEventActor('Mina')
