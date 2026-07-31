@@ -56,6 +56,8 @@ const MIN_SPARSE_DEPTH = 2
 const MAX_SPARSE_DEPTH = 8
 const DEFAULT_SPARSE_DEPTH = 4
 const SHA256_BYTES = 32
+const DIAGRAM_MIN_WIDTH = 760
+const DIAGRAM_LEAF_SPACING = 140
 
 const INITIAL_SPARSE_ENTRIES: SparseEntry[] = [
   { id: 'state_001', key: 'account:alice', value: '42', enabled: true },
@@ -179,6 +181,14 @@ function formatByteCount(bytes: number) {
 
 function valueSummary(value: string) {
   return value.length > 24 ? `${value.slice(0, 20)}... (${formatByteCount(utf8ByteLength(value))})` : value
+}
+
+function diagramWidth(leafCount: number) {
+  return Math.max(DIAGRAM_MIN_WIDTH, leafCount * DIAGRAM_LEAF_SPACING)
+}
+
+function diagramNodeX(spanStart: number, spanEnd: number, leafCount: number, width: number) {
+  return ((spanStart + spanEnd) / 2 / Math.max(leafCount, 1)) * width
 }
 
 type TooltipTag = 'b' | 'div' | 'span' | 'strong'
@@ -350,7 +360,7 @@ function sparseNodeTooltip(node: SparseNode, pathNode: boolean, proofNode: boole
       badge,
       digest: node.hash,
       equation: 'SHA-256("smt:leaf|" + path + "|" + key + "|" + value)',
-      inputs: `path = ${node.path}\nkey = ${node.key}\nvalue = ${node.value ?? ''}`,
+      inputs: `path = ${node.path} (first ${depth} bits of SHA-256("smt:path|" + key))\nkey = ${node.key}\nvalue = ${node.value ?? ''}`,
       proofRole,
     }
   }
@@ -731,13 +741,17 @@ function App() {
     setNewEventDetail('')
   }
 
-  const sparseSvgWidth = Math.max(800, sparseTree.leaves.length * 80)
+  const sparseSvgWidth = diagramWidth(sparseTree.leaves.length)
   const sparseSvgHeight = 40 + (sparseTree.depth + 1) * 70
-  const sparseNodeX = (level: number, index: number) => (index + 0.5) * (sparseSvgWidth / 2 ** (sparseTree.depth - level))
+  const sparseNodeX = (level: number, index: number) => {
+    const leavesPerNode = 2 ** level
+    return diagramNodeX(index * leavesPerNode, (index + 1) * leavesPerNode, sparseTree.leaves.length, sparseSvgWidth)
+  }
   const sparseNodeY = (level: number) => 30 + (sparseTree.depth - level) * 70
   const selectedSparseIndex = sparseProof.index
   const isSparsePathNode = (level: number, index: number) => index === (selectedSparseIndex >> level)
   const isSparseProofNode = (level: number, index: number) => level < sparseTree.depth && index === ((selectedSparseIndex >> level) ^ 1)
+  const logSvgWidth = diagramWidth(logEvents.length)
 
   const showDiagramTooltip = (event: MouseEvent<SVGGElement> | FocusEvent<SVGGElement>, details: TooltipDetails, owner: DiagramTooltip['owner']) => {
     const frame = event.currentTarget.closest<HTMLElement>('.tree-frame')
@@ -756,7 +770,7 @@ function App() {
   }
   const hideDiagramTooltip = () => setDiagramTooltip(null)
 
-  const logNodeX = (node: LogNode) => (((node.start + node.end) / 2) / Math.max(logEvents.length, 1)) * 760
+  const logNodeX = (node: LogNode) => diagramNodeX(node.start, node.end, logEvents.length, logSvgWidth)
   const logNodeY = (node: LogNode) => 38 + node.depth * 62
   const logHeight = logView.tree ? Math.max(260, (logTreeHeight(logView.tree) + 1) * 62 + 36) : 260
   const proofNodeKeys = new Set(logView.proof.map((step) => `${step.sibling.start}-${step.sibling.end}`))
@@ -957,9 +971,6 @@ function App() {
                       </g>
                     )
                   }))}
-                  {sparseTree.levels.map((_, level) => (
-                    <text className="tree-level-label" key={`label-${level}`} x="10" y={sparseNodeY(level) + 3}>{level === sparseTree.depth ? 'root' : level === 0 ? 'leaves' : 'branch'}</text>
-                  ))}
                 </svg>
                 <DiagramTooltipOverlay tooltip={diagramTooltip} owner="sparse" />
               </div>
@@ -1079,7 +1090,7 @@ function App() {
               </div>
               <div className="tree-frame log-tree-frame" onScroll={hideDiagramTooltip}>
                 {logView.tree ? (
-                  <svg className="tree-svg log-svg" viewBox={`0 0 760 ${logHeight}`} role="img" aria-label="Append-only Merkle log tree visualization">
+                  <svg className="tree-svg log-svg" width={logSvgWidth} height={logHeight} viewBox={`0 0 ${logSvgWidth} ${logHeight}`} role="img" aria-label="Append-only Merkle log tree visualization">
                     {collectLogEdges(logView.tree).map(({ parent, child }) => {
                       const childIsPath = child.start <= logView.selectedIndex && logView.selectedIndex < child.end
                       const childIsProof = proofNodeKeys.has(`${child.start}-${child.end}`)
@@ -1114,8 +1125,6 @@ function App() {
                         )
                       })
                     })()}
-                    <text className="tree-level-label" x="10" y="42">root</text>
-                    <text className="tree-level-label" x="10" y={logHeight - 8}>events</text>
                   </svg>
                 ) : <div className="empty-log">Append an event to grow the log.</div>}
                 <DiagramTooltipOverlay tooltip={diagramTooltip} owner="log" />

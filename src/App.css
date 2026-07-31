@@ -107,7 +107,6 @@ main,
 .hash-label,
 .section-tag,
 .rail-accent,
-.tree-level-label,
 .footer,
 .proof-table-head,
 .event-time {
@@ -921,11 +920,6 @@ main {
   letter-spacing: 0.05em;
   pointer-events: none;
 }
-.tree-level-label {
-  fill: var(--soft-muted);
-  font-size: 8px;
-}
-
 .proof-card {
   margin: 16px;
   border: 1px solid #a9c8c5;
@@ -1172,7 +1166,11 @@ main {
   padding-top: 4px;
   background-color: #f6f0ee;
 }
-.log-svg { min-width: 650px; }
+.log-svg {
+  width: auto;
+  min-width: 760px;
+  max-width: none;
+}
 .log-node rect {
   fill: #fbf8f6;
   stroke: #cbbcb8;
