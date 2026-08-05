@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialLogEvents, createInitialSparseEntries } from '../demoData'
+import { createInitialKeyTransPublications, createInitialLogEvents, createInitialSparseEntries } from '../demoData'
 import { hashFields, sha256 } from './hash'
 import { buildLogTree, buildLogView, logLeafHash } from './log'
 import { buildSparseProof, buildSparseTree, DEFAULT_SPARSE_DEPTH, sparseKeyPath, validateSparseEntries } from './sparse'
@@ -63,11 +63,16 @@ describe('demo defaults', () => {
     const secondSparseEntries = createInitialSparseEntries()
     const firstLogEvents = createInitialLogEvents()
     const secondLogEvents = createInitialLogEvents()
+    const firstKeyTransPublications = createInitialKeyTransPublications()
+    const secondKeyTransPublications = createInitialKeyTransPublications()
 
     expect(firstSparseEntries).not.toBe(secondSparseEntries)
     expect(firstSparseEntries[0]).not.toBe(secondSparseEntries[0])
     expect(firstLogEvents).not.toBe(secondLogEvents)
     expect(firstLogEvents[0]).not.toBe(secondLogEvents[0])
+    expect(firstKeyTransPublications).not.toBe(secondKeyTransPublications)
+    expect(firstKeyTransPublications[0]).not.toBe(secondKeyTransPublications[0])
+    expect(firstKeyTransPublications[0].updates[0]).not.toBe(secondKeyTransPublications[0].updates[0])
   })
 })
 

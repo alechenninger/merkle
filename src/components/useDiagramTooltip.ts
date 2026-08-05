@@ -1,7 +1,7 @@
 import { useState, type MouseEvent } from 'react'
 import type { TooltipDetails } from './tooltipText'
 
-export type DiagramTooltipOwner = 'sparse' | 'log'
+export type DiagramTooltipOwner = 'sparse' | 'log' | 'keytrans-prefix' | 'keytrans-log'
 
 type DiagramTooltip = {
   owner: DiagramTooltipOwner

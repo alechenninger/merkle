@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { InfoTip } from './components/InfoTip'
 import { LogSection } from './features/log/LogSection'
 import { useLogDemo } from './features/log/useLogDemo'
 import { SparseSection } from './features/sparse/SparseSection'
 import { useSparseDemo } from './features/sparse/useSparseDemo'
+import { KeyTransparencyPage } from './features/keytrans/KeyTransparencyPage'
 
-function App() {
+type HomePageProps = {
+  onNavigate: (path: string) => void
+}
+
+function HomePage({ onNavigate }: HomePageProps) {
   const sparse = useSparseDemo()
   const log = useLogDemo()
   const [resetToken, setResetToken] = useState(0)
@@ -44,6 +49,7 @@ function App() {
           <InfoTip text="Every digest is 32 raw bytes. The .. marker only abbreviates hashes in the interface." below>
             <span className="hash-label">SHA-256 / .. display only</span>
           </InfoTip>
+          <a className="home-kt-link" href="/key-transparency" onClick={(event) => { event.preventDefault(); onNavigate('/key-transparency') }}>Key Transparency walkthrough -&gt;</a>
           <button className="reset-button" type="button" onClick={resetDemo}>Reset demo</button>
         </div>
       </header>
@@ -51,7 +57,7 @@ function App() {
       <main>
         <section className="intro-band">
           <div className="intro-copy">
-            <span className="section-kicker">Data integrity lab / 02 structures</span>
+            <span className="section-kicker">Data integrity lab / 03 structures</span>
             <h2>Merkle structures, made inspectable.</h2>
             <p>
               Change a state or append an event. Watch one compact root commit to the whole structure, then inspect the
@@ -96,6 +102,28 @@ function App() {
       <footer className="footer"><span>MERKLE / FIELD NOTES</span><span>interactive proof laboratory</span><span>deterministic demo hashes</span></footer>
     </div>
   )
+}
+
+function App() {
+  const [pathname, setPathname] = useState(() => window.location.pathname.replace(/\/+$/, '') || '/')
+
+  useEffect(() => {
+    const handlePopState = () => setPathname(window.location.pathname.replace(/\/+$/, '') || '/')
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path)
+    setPathname(path)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (pathname === '/key-transparency') {
+    return <KeyTransparencyPage onNavigate={navigate} />
+  }
+
+  return <HomePage onNavigate={navigate} />
 }
 
 export default App

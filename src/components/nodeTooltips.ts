@@ -1,4 +1,4 @@
-import type { LogEvent, LogNode, SparseNode } from '../domain/types'
+import type { KeyTransLogNode, KeyTransPrefixNode, LogEvent, LogNode, SparseNode } from '../domain/types'
 import type { TooltipDetails } from './tooltipText'
 
 export function proofRoleDescription(pathNode: boolean, proofNode: boolean, root: boolean, leaf: boolean, active: boolean) {
@@ -73,4 +73,48 @@ export function logNodeTooltip(node: LogNode, event: LogEvent | undefined, pathN
 
 export function logLeafTooltip(event: LogEvent, hash: string, pathNode: boolean, proofNode: boolean) {
   return logNodeTooltip({ start: 0, end: 1, depth: 0, hash }, event, pathNode, proofNode, false)
+}
+
+export function keyTransPrefixNodeTooltip(node: KeyTransPrefixNode, pathNode: boolean, proofNode: boolean, root: boolean): TooltipDetails {
+  const leaf = node.type === 'leaf'
+  const badge = root ? 'prefix root' : leaf ? 'label-version leaf' : 'prefix branch'
+  const proofRole = proofRoleDescription(pathNode, proofNode, root, leaf, leaf)
+  if (node.type === 'leaf') {
+    return {
+      badge,
+      digest: node.hash,
+      equation: 'SHA-256(JSON(["kt:prefix:leaf", demo_vrf_output, commitment]))',
+      inputs: `label = ${node.record.label}\nversion = ${node.record.version}\ndemo VRF output = ${node.searchKey}\ncommitment = ${node.commitment}`,
+      proofRole,
+    }
+  }
+  return {
+    badge,
+    digest: node.hash,
+    equation: 'SHA-256(JSON(["kt:prefix:node", left, right]))',
+    inputs: `depth = ${node.depth}\nleft = ${node.left?.hash ?? 'all-zero stand-in'}\nright = ${node.right?.hash ?? 'all-zero stand-in'}`,
+    proofRole,
+  }
+}
+
+export function keyTransLogNodeTooltip(node: KeyTransLogNode, pathNode: boolean, proofNode: boolean, root: boolean): TooltipDetails {
+  const leaf = !node.left
+  const badge = proofNode ? 'balanced-subtree head' : root ? 'signed tree-head target' : leaf ? 'published prefix root' : 'log branch'
+  const proofRole = proofNode ? 'balanced-subtree head' : proofRoleDescription(pathNode, proofNode, root, leaf, leaf)
+  if (leaf) {
+    return {
+      badge,
+      digest: node.hash,
+      equation: 'SHA-256(JSON(["kt:log:leaf", timestamp, prefix_root]))',
+      inputs: `timestamp = ${node.timestamp ?? ''}\nprefix root = ${node.prefixRoot ?? ''}`,
+      proofRole,
+    }
+  }
+  return {
+    badge,
+    digest: node.hash,
+    equation: 'SHA-256(JSON(["kt:log:node", left, right]))',
+    inputs: `left = ${node.left?.hash ?? ''}\nright = ${node.right?.hash ?? ''}`,
+    proofRole,
+  }
 }
